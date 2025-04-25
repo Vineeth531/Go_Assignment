@@ -27,24 +27,26 @@ Issue Identified and Resolved:
 
 -  Removed below line to avoid sending entire endpoint instead of sending only body in it
     Added:
-      bodyBytes := []byte(endpoint.Body)
+        bodyBytes := []byte(endpoint.Body)
     Removed:
-      bodyBytes, err := json.Marshal(endpoint)
-      if err != nil {
-        return
-      } 
+        bodyBytes, err := json.Marshal(endpoint)
+        if err != nil {
+            return
+        } 
 - Made below changes to close the request after reading it to avoid leakages, also added check for duration  less than 500ms
-
+<pre> \`\`\` 
     before:
-      if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && duration <= 500*time.Millisecond {
-        stats[domain].Success++
-      }
+        if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && duration <= 500*time.Millisecond {
+            stats[domain].Success++
+        }
+\`\`\` </pre>
+<pre> \`\`\`
     after:
-      if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && duration <= 500*time.Millisecond {
-        defer resp.Body.Close()
-        stats[domain].Success++
-      }
-
+        if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && duration <= 500*time.Millisecond {
+            defer resp.Body.Close()
+            stats[domain].Success++
+        }
+\`\`\` </pre>
 - Modified the extractDomain function to avoid port reading:
 
     before:
